@@ -1,0 +1,31 @@
+# Ignore OS system files that are usually auto-added to directories
+[Tt]humbs.db
+.[dD][sS]_[sS]tore
+
+# Ignore Salesforce DX config files
+.sfdx
+.salesforce
+
+# Ignore Eclipse config files
+.classpath
+.project
+.settings/
+
+# Ignore VSCode config files
+.vscode
+
+# Ignore Intellij/Webstorm config files
+.idea/
+*.iml
+*.iws
+IlluminatedCloud/
+
+#Sublime nature exclusions
+*.sublime-workspace
+*.sublime-project
+*.sublime-settings
+
+#MavensMate nature exclusions
+apex-scripts/log
+debug/logs
+mm.log

@@ -1,2 +1,167 @@
 # fflib-force-di
+
+**Dependencies:** Before you can use fflib-force-di you must install these dependencies
+ - [fflib-Apex-Mocks](https://github.com/apex-enterprise-patterns/fflib-apex-mocks)
+ - [fflib-Apex-Common](https://github.com/apex-enterprise-patterns/fflib-apex-common)
+ - [Force-di](https://github.com/apex-enterprise-patterns/force-di)
+
+## Documentation
+
+This plugin is designed to link force-di to the Apex Enterprise Patterns.
+It will replace parts of the existing fflib_Application Factories.
+Instead of hardcoded dependencies in Apex, this plugin allows you you use the
+force-di for dependencies instead.
+
+It will also allow you to use the Apex Enterprise Patterns in a DX project that
+consists of multiple depended sub-packages.
+The core-package will then contain just an "empty" Application.cls that can
+be referenced by all sub-packages. If they need to add a dependency they no longer need to update
+the application class but just add another custom meta-data record
+in their own folder defining the dependency.
+
+Example:
+```apex
+public with sharing class Application
+{
+    public static final String APP_NAME = 'MyForceApp';
+
+    // Configure and create the UnitOfWorkFactory for this Application
+    public static final fflib_Application.UnitOfWorkFactory UnitOfWork =
+            new fflib_Application.UnitOfWorkFactory(
+                    new List<SObjectType>
+                    {
+                            Account.SObjectType,
+                            Contact.SObjectType
+                    });
+
+    // Configure and create the ServiceFactory for this Application
+    public static final fflib_ServiceFactory Service = new fflib_ServiceFactoryImp();
+
+    // Configure and create the SelectorFactory for this Application
+    public static final fflib_SelectorFactory Selector = new fflib_SelectorFactoryImp(APP_NAME);
+
+    // Configure and create the DomainFactory for this Application
+    public static final fflib_DomainFactory Domain = 
+            new fflib_DomainFactoryImp(APP_NAME, Application.Selector);
+}
+```
+The plugin required an `APP_NAME`, which is either the Namespace
+or another unique application identifier with a similar format as the Namespace.
+
+No changes were made to the UnitOfWork factory, so will stay the same.
+
+Instead of defining a list with all the depencendies we just create three new factory instances,
+one for Serivce, Selector and Domain.
+Only the Selector and Domain need to know the Namespace or App_Name.
+These factories will connect with Force-Di to retrieve the dependencies.
+
+The methods on the application factories are the same as the current fflib implementation,
+which makes implementing this plugin very easy.
+
+All the bindings are stored not in the standard force-di binding object but in
+the custom meta-data object 'Enterprise Pattern Binding' (`fflib_Binding__mdt`).
+This object is very similar to the one in force-di with the exception of the specific Type
+(Selector, Domain, Service).
+This object only supports Apex files. Any other dependency injection for e.g. Lightning Components
+still need to be registered in the force-di binding object.
+
+
+
+### Domain Factory
+
+#### newInstance(Set<Id> recordIds)
+```apex
+public  fflib_ISObjectDomain newInstance(Set<Id> recordIds);
+```
+Queries the records and constructs a new domain instance for the query result
+
+
+#### newInstance(List<SObject> records)
+```apex
+public fflib_ISObjectDomain newInstance(List<SObject> records);
+```
+Gets the SObjectType from the list of records and constructs a new instance of the domain with the records
+
+
+#### newInstance(List<SObject> records, SObjectType domainSObjectType);
+```apex
+public fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domainSObjectType);
+```
+Gets the instance for the domain constructor from force-di and constructs a new domain
+
+
+#### replaceWith(SObjectType sObjectType, Object domainImpl)
+```apex
+public void replaceWith(SObjectType sObjectType, Object domainImpl);
+```
+Dynamically replace a domain implementation at runtime
+
+
+#### setMock(SObjectType sObjectType, Object mockImp)
+```apex
+@TestVisible abstract void setMock(SObjectType sObjectType, Object mockImp);
+```
+Override the domain implementation at runtime with a stubbed/mock version
+
+
+
+### Selector Factory
+
+#### newInstance(Schema.SObjectType sObjectType)
+```apex
+public fflib_ISObjectSelector newInstance(Schema.SObjectType sObjectType);
+```
+
+
+#### replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
+```apex
+public void replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
+```
+Used to replace the implementation for another, e.g. a mock
+
+
+#### selectById(Set<Id> recordIds);
+```apex
+List<SObject> selectById(Set<Id> recordIds);
+```
+Method to query the given SObject records and internally creates
+an instance of the registered Selector and calls its selectSObjectById method.
+
+#### selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
+```apex
+List<SObject> selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
+
+```
+Method to query related records to those provided,
+for example if passed a list of Opportunity records and the AccountId field will
+construct internally a list of Account Ids and call the registered
+Account selector to query the related Account records, e.g.
+
+###### Example
+     List<Account> accounts = 
+		 (List<Account>) Application.Selector.selectByRelationship(myOpps, Opportunity.AccountId);
+
+### Service Factory
+
+#### newInstance(Type serviceInterfaceType);
+```apex
+public Object newInstance(Type serviceInterfaceType);
+```
+Creates a new instance of a service class by referencing its binding type
+
+
+#### replaceWith(Type serviceInterfaceType, Object serviceImpl);
+```apex
+public void replaceWith(Type serviceInterfaceType, Object serviceImpl);
+```
+Used to replace the implementation for another, e.g. a mock
+
+
+## Project Folders
+|Folder|Description|
+|:---|:---|
+|sfdx-source/force-app/main/default|Core of the application|
+|sfdx-source/force-app/examples|Examples|
+
+
 Have fflib use the force-di package to enable dependency injection 

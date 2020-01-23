@@ -9,7 +9,7 @@
 
 This plugin is designed to link force-di to the Apex Enterprise Patterns.
 It will replace parts of the existing fflib_Application Factories.
-Instead of hardcoded dependencies in Apex, this plugin allows you you use the
+Instead of hardcoded dependencies in Apex, this plugin allows you to use the
 force-di for dependencies instead.
 
 It will also allow you to use the Apex Enterprise Patterns in a DX project that
@@ -75,6 +75,15 @@ public  fflib_ISObjectDomain newInstance(Set<Id> recordIds);
 ```
 Queries the records and constructs a new domain instance for the query result
 
+###### Example
+    public with sharing class MyAccountService
+    {
+        public void myMethod(Set<Id> idSet)
+        {
+            Accounts domain = (Accounts) Application.Domain.newInstance(idSet);
+            ...
+        }
+    }
 
 #### newInstance(List<SObject> records)
 ```apex
@@ -82,6 +91,15 @@ public fflib_ISObjectDomain newInstance(List<SObject> records);
 ```
 Gets the SObjectType from the list of records and constructs a new instance of the domain with the records
 
+###### Example
+    public with sharing class MyAccountService
+    {
+        public void myMethod(List<Accounts> records)
+        {
+            Accounts domain = (Accounts) Application.Domain.newInstance(records);
+            ...
+        }
+    }
 
 #### newInstance(List<SObject> records, SObjectType domainSObjectType);
 ```apex
@@ -89,6 +107,15 @@ public fflib_ISObjectDomain newInstance(List<SObject> records, SObjectType domai
 ```
 Gets the instance for the domain constructor from force-di and constructs a new domain
 
+###### Example
+    public with sharing class MyAccountService
+    {
+        public void myMethod(List<SObject> records)
+        {
+            Accounts domain = (Accounts) Application.Domain.newInstance(records, Account.SObjectType);
+            ...
+        }
+    }
 
 #### replaceWith(SObjectType sObjectType, Object domainImpl)
 ```apex
@@ -112,6 +139,17 @@ Override the domain implementation at runtime with a stubbed/mock version
 public fflib_ISObjectSelector newInstance(Schema.SObjectType sObjectType);
 ```
 
+###### Example
+    public with sharing class MyAccountService
+    {
+        public void myMethod(Set<Id> idSet)
+        {
+            List<Account> records = 
+                    ((AccountsSelector) Application.Selector.newInstance(Account.SObjectType))
+                            .selectById(idSet);
+            ...
+        }
+    }
 
 #### replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
 ```apex
@@ -127,8 +165,19 @@ List<SObject> selectById(Set<Id> recordIds);
 Method to query the given SObject records and internally creates
 an instance of the registered Selector and calls its selectSObjectById method.
 
+###### Example
+    public with sharing class MyAccountService
+    {
+        public void myMethod(Set<Id> idSet)
+        {
+            List<Account> records = (List<Account>) Application.Selector.selectById(idSet);
+            ...
+        }
+    }
+
 #### selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
 ```apex
+public 
 List<SObject> selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
 
 ```
@@ -138,8 +187,13 @@ construct internally a list of Account Ids and call the registered
 Account selector to query the related Account records, e.g.
 
 ###### Example
-     List<Account> accounts = 
-		 (List<Account>) Application.Selector.selectByRelationship(myOpps, Opportunity.AccountId);
+     public with sharing class Opportunities
+     {
+        public List<Account> getRelatedAccountRecords()
+        {
+            return (List<Account>) Application.Selector.selectByRelationship(Records, Opportunity.AccountId);
+        }
+    }
 
 ### Service Factory
 
@@ -149,6 +203,28 @@ public Object newInstance(Type serviceInterfaceType);
 ```
 Creates a new instance of a service class by referencing its binding type
 
+###### Example
+     public with sharing class MyController
+     {
+        public void myMethod()
+        {
+            ((MyService) Application.Service.newInstance(MyService.class))
+                    .myServiceMethod();
+        }
+    }
+    
+    public interface MyService
+    {
+        myServiceMethod();
+    }
+    
+    public with sharing MyServiceImp implements MyService
+    {
+        public void myServiceMethod()
+        {
+            ...
+        }
+    }
 
 #### replaceWith(Type serviceInterfaceType, Object serviceImpl);
 ```apex

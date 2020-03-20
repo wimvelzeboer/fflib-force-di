@@ -19,7 +19,8 @@ public abstract with sharing class fflib_SelectorFactoryQueries implements fflib
 		// No point creating an empty Domain class, nor can we determine the SObjectType anyway
 		if (recordIds == null || recordIds.size() == 0)
 		{
-			throw new fflib_DeveloperException(Label.fflib_InvalidRecordIdSet);
+			// todo - convert to label
+			throw new fflib_DeveloperException('Label.fflib_InvalidRecordIdSet');
 		}
 
 		// Determine SObjectType
@@ -28,7 +29,8 @@ public abstract with sharing class fflib_SelectorFactoryQueries implements fflib
 		{
 			if (recordId.getSobjectType() != domainSObjectType)
 			{
-				throw new fflib_DeveloperException(Label.fflib_SetContainsIdsFromDifferentSObjectTypes);
+				// todo - convert to label
+				throw new fflib_DeveloperException('Label.fflib_SetContainsIdsFromDifferentSObjectTypes');
 			}
 		}
 
@@ -63,5 +65,4 @@ public abstract with sharing class fflib_SelectorFactoryQueries implements fflib
 	}
 
 	abstract fflib_ISObjectSelector newInstance(SObjectType sObjectType);
-	abstract void replaceWith(SObjectType sObjectType, Object selectorImpl);
 }

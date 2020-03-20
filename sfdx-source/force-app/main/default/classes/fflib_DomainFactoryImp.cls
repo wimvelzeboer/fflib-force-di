@@ -3,7 +3,7 @@
  * Description:  Domain factory for Domains configured as bindings to the force-di
  * @author: architect ir. Wilhelmus G.J. Velzeboer
  */
-public with sharing class fflib_DomainFactoryImp extends fflib_DomainFactory
+public virtual with sharing class fflib_DomainFactoryImp implements fflib_DomainFactory
 {
 	protected String appName;
 	protected fflib_SelectorFactory selectorFactory;
@@ -84,6 +84,16 @@ public with sharing class fflib_DomainFactoryImp extends fflib_DomainFactory
 				.replaceBindingWith(domainImpl);
 	}
 
+	// @Deprecated - only available for backwards compatibility
+	public void setMock(Object selectorImp)
+	{
+		System.debug(System.LoggingLevel.WARN, 'setMock is deprecated and replaced for replaceWith');
+		replaceWith(
+				((fflib_ISObjectSelector) selectorImp).sObjectType(),
+				selectorImp
+		);
+	}
+
 
 	/**
 	 * assertForDomainImplementation
@@ -99,13 +109,16 @@ public with sharing class fflib_DomainFactoryImp extends fflib_DomainFactory
 		{
 			throw new fflib_DeveloperException(
 					String.format(
-							Label.fflib_DomainConstructorNotFoundForSObject,
+							// todo - convert to label
+							'Label.fflib_DomainConstructorNotFoundForSObject',
 							new List<String>{ sObjectType.getDescribe().getName() }
 					));
 		}
-		if (!(implementation instanceof fflib_SObjectDomain.IConstructable2))
+		if (!(implementation instanceof fflib_SObjectDomain.IConstructable2) &&
+				!(implementation instanceof fflib_SObjectDomain.IConstructable))
 		{
-			throw new fflib_DeveloperException(Label.fflib_DomainConstructorShouldBeIConstructable2);
+			// todo - convert to label
+			throw new fflib_DeveloperException('Label.fflib_DomainConstructorShouldBeIConstructable2');
 		}
 	}
 
@@ -120,7 +133,8 @@ public with sharing class fflib_DomainFactoryImp extends fflib_DomainFactory
 	{
 		if (sObjectType == null)
 		{
-			throw new fflib_DeveloperException(Label.fflib_UnableToDetermineSObjectType);
+			// todo convert to label
+			throw new fflib_DeveloperException('Label.fflib_UnableToDetermineSObjectType');
 		}
 	}
 
@@ -140,6 +154,16 @@ public with sharing class fflib_DomainFactoryImp extends fflib_DomainFactory
 			List<SObject> records,
 			Schema.SObjectType sObjectType)
 	{
+		// For backwards compatibility
+		if ( !(constructorImp instanceof fflib_SObjectDomain.IConstructable2) &&
+		      (constructorImp instanceof fflib_SObjectDomain.IConstructable))
+		{
+			System.debug(System.LoggingLevel.WARN, 'DEPRECATED: Just IConstructable as Domain constructor is no longer support, please IConstructable2 instead');
+			return (fflib_ISObjectDomain)
+					(((fflib_SObjectDomain.IConstructable) constructorImp)
+							.construct(records));
+		}
+
 		return (fflib_ISObjectDomain)
 				(((fflib_SObjectDomain.IConstructable2) constructorImp)
 						.construct(records, sObjectType));

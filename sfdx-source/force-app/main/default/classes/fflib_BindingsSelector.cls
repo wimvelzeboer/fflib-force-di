@@ -34,6 +34,19 @@ public without sharing class fflib_BindingsSelector extends fflib_SObjectSelecto
 
 	public fflib_Bindings selectAll()
 	{
-		return new fflib_Bindings(Database.query(newQueryFactory().toSOQL()));
+		return new fflib_Bindings([
+				SELECT AppName__c,
+						QualifiedAPIName,
+						DeveloperName,
+						NamespacePrefix,
+						Type__c,
+						To__c,
+						BindingObject__c,
+						BindingObject__r.QualifiedApiName,
+						BindingObjectAlternate__c,
+						BindingSequence__c
+				FROM fflib_Binding__mdt
+		]
+		);
 	}
 }

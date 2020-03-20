@@ -24,6 +24,16 @@ public virtual with sharing class fflib_SelectorFactoryImp extends fflib_Selecto
 		di_Injector.Org.Bindings.byName(getBindingName(sObjectType)).replaceBindingWith(selectorImpl);
 	}
 
+	// @Deprecated - only available for backwards compatibility
+	public void setMock(Object selectorImp)
+	{
+		System.debug(System.LoggingLevel.WARN, 'setMock is deprecated and replaced for replaceWith');
+		replaceWith(
+				((fflib_ISObjectSelector) selectorImp).sObjectType(),
+				selectorImp
+		);
+	}
+
 	private String getBindingName(Schema.SObjectType sObjectType)
 	{
 		return this.appName + '.selector.' + sObjectType.getDescribe().getName();

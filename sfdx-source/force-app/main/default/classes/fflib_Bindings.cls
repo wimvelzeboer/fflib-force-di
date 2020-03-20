@@ -149,11 +149,13 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 		 * getSObjectName
 		 *
 		 * @description Use the Binding object or if blank use the alternate
-		 * @return Returns fflib_Binding__mdt.BindingObject__c if availavble or fflib_Binding__mdt.BindingObjectAlternate__c
+		 * @return Returns fflib_Binding__mdt.BindingObject__c if available or fflib_Binding__mdt.BindingObjectAlternate__c
 		 */
 		protected String getSObjectName()
 		{
-			return (String.isNotBlank(record.BindingObject__c) ? record.BindingObject__c : record.BindingObjectAlternate__c);
+			return (String.isNotBlank(record.BindingObject__c) ?
+					record.BindingObject__r.QualifiedApiName.toLowerCase().trim() :
+					record.BindingObjectAlternate__c.toLowerCase().trim());
 		}
 	}
 

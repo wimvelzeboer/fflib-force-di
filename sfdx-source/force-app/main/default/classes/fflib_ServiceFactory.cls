@@ -7,4 +7,7 @@ public interface fflib_ServiceFactory
 {
 	Object newInstance(Type serviceInterfaceType);
 	void replaceWith(Type serviceInterfaceType, Object serviceImpl);
+
+	// @Deprecated - only available for backwards compatibility
+	void setMock(Type serviceInterfaceType, Object serviceImp);
 }

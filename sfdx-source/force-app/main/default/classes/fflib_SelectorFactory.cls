@@ -9,4 +9,7 @@ public interface fflib_SelectorFactory
 	void replaceWith(Schema.SObjectType sObjectType, Object selectorImpl);
 	List<SObject> selectById(Set<Id> recordIds);
 	List<SObject> selectByRelationship(List<SObject> relatedRecords, Schema.SObjectField relationshipField);
+
+	// @Deprecated - only available for backwards compatibility
+	void setMock(Object selectorImp);
 }

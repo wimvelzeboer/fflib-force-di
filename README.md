@@ -43,6 +43,10 @@ public with sharing class Application
     // Configure and create the DomainFactory for this Application
     public static final fflib_DomainFactory Domain = 
             new fflib_DomainFactoryImp(APP_NAME, Application.Selector);
+
+    public static final fflib_TriggerHandlerFactory TriggerHandler =
+            new fflib_TriggerHandlerFactoryImp(APP_NAME, Domain);
+
 }
 ```
 The plugin required an `APP_NAME`, which is either the Namespace
@@ -50,8 +54,8 @@ or another unique application identifier with a similar format as the Namespace.
 
 No changes were made to the UnitOfWork factory, so will stay the same.
 
-Instead of defining a list with all the depencendies we just create three new factory instances,
-one for Serivce, Selector and Domain.
+Instead of defining a list with all the dependencies we just create three new factory instances,
+one for Service, Selector and Domain.
 Only the Selector and Domain need to know the Namespace or App_Name.
 These factories will connect with Force-Di to retrieve the dependencies.
 
@@ -66,6 +70,17 @@ This object only supports Apex files. Any other dependency injection for e.g. Li
 still need to be registered in the force-di binding object.
 
 
+## Class & Method reference
+
+- di_Bindings, 
+<br/> domain class for Di Bindings
+- [di_Configurator](docs/di-Configurator.md), creates Di Bindings at runtime
+- fflib_Bindings, Domain class for fflib_Binding_mdt
+- fflib_BindingsSelector, Selector for the Custom Metadata object fflib_Binding__mdt
+- fflib_CustomMetaDataModule, Dependency Injection module to register the bindings for the SoC layers
+- fflib_DeveloperException, Generic exception class
+- [fflib_DomainFactory](docs/fflib_DomainFactory.md), Interface for the Domain factory to be able to dynamically instantiate domains
+- [fflib_SelectorFactory](),
 
 ### Domain Factory
 
@@ -121,15 +136,44 @@ Gets the instance for the domain constructor from force-di and constructs a new 
 ```apex
 public void replaceWith(SObjectType sObjectType, Object domainImpl);
 ```
-Dynamically replace a domain implementation at runtime
+Dynamically replace a domain implementation at runtime.
+As this is a domain class and domain classes are constructed via the sub-class Constructor 
+we need to replace the binding with the Constructor implementation and not the actual domain implementation.
 
+###### Example
+```apex
+    public with sharing class MyAccountService
+    {
+        public void myMethod(List<Account> records)
+        {
+            if (isUserInTestGroup())
+            {
+                Application.Domain.replaceWith(Schema.Account.SObjectType, new TestGroep_AccountsImp.Constructor());
+            }
+
+            // This domain will be different for the users in the TestGroup
+            Accounts domain = (Accounts) Application.Domain.newInstance(records);
+        }
+    }
+```
+
+```apex
+@IsTest
+static void itShouldRunMyTest()
+{
+    // GIVEN
+    fflib_ApexMocks mocks = new fflib_ApexMocks();
+    AccountsConstructor domainConstructorMock = (Accounts) mocks.mock(AccountsImp.class);
+    Application.Service.replaceWith(Schema.Account.SObjectType, domainMock)
+    
+    
+}
+```
 
 #### setMock(SObjectType sObjectType, Object mockImp)
 ```apex
-@TestVisible abstract void setMock(SObjectType sObjectType, Object mockImp);
+void setMock(Schema.SObjectType sObjectType, Object domainImp);
 ```
-Override the domain implementation at runtime with a stubbed/mock version
-
 
 
 ### Selector Factory

@@ -416,7 +416,8 @@ trigger Accounts on Account
 {
     Application.TriggerHandler.handle(Accounts.SObjectType, fflib_TriggerSObjectContext.class );
 }
-
+```
+```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
     public override void onBeforeUpdate(fflib_TriggerChangeEventContext ctx)
@@ -438,7 +439,8 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
                 .upperCaseName();
     }
 }
-
+```
+```apex
 public with sharing class Accounts extends fflib_SObjectDomain
 {
     ...
@@ -461,7 +463,8 @@ trigger AccountChangeEvents on AccountChangeEvent (after insert)
 {
     Application.TriggerHandler.handle(AccountChangeEvent.SObjectType, fflib_TriggerChangeEventContext.class);
 }
-
+```
+```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandler
 {
     public void handle(fflib_TriggerChangeEventContext ctx)

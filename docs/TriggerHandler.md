@@ -256,7 +256,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
     private Accounts largeIrishAccounts;
 
-    public override void pre(fflib_TriggerChangeEventContext ctx) 
+    public override void pre(fflib_TriggerSObjectContext ctx) 
     {
         if (!isValidTriggerOperation(ctx)) return;
  
@@ -266,7 +266,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
                     .selectByNumberOfEmployeesGreaterThan(25);
     }
 
-    public override void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerSObjectContext ctx)
     {
         // Guard clause with validation
         if (!isValidExecution(ctx)) return ;  
@@ -274,13 +274,13 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating('Warm');
     }
 
-    private Boolean isValidTriggerOperation(fflib_TriggerChangeEventContext ctx)
+    private Boolean isValidTriggerOperation(fflib_TriggerSObjectContext ctx)
     {
         return (ctx.operationType == System.TriggerOperation.BEFORE_INSERT || 
                 ctx.operationType == System.TriggerOperation.BEFORE_UPDATE );
     }
     
-    private Boolean isValidExecution(fflib_TriggerChangeEventContext ctx)
+    private Boolean isValidExecution(fflib_TriggerSObjectContext ctx)
     {
         return largeIrishAccounts.isNotEmpty() && isValidTriggerOperation(ctx);
     }
@@ -306,7 +306,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
     private Accounts largeIrishAccounts;
 
-    public override void onBeforeInsert(fflib_TriggerChangeEventContext ctx) 
+    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx) 
     {
         Accounts largeIrishAccounts = 
             ctx.getDomain()
@@ -318,7 +318,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating('Hot');
     }
     
-    public override void onBeforeUpdate(fflib_TriggerChangeEventContext ctx)
+    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
     {
         Accounts changedRating = ctx.getChangedRecords(Schema.Accounts.Rating);
         if (changedRating.isEmpty()) return;
@@ -345,7 +345,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
     private Accounts largeIrishAccounts;
 
-    public override void pre(fflib_TriggerChangeEventContext ctx) 
+    public override void pre(fflib_TriggerSObjectContext ctx) 
     {
         if (!isValidTriggerOperation(ctx)) return; 
 
@@ -362,7 +362,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         ctx.addRelatedRecords(Schema.Account.Contacts);
     }
 
-    public override void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerSObjectContext ctx)
     {
         if (!isValidExecution(ctx)) return;  
         
@@ -387,13 +387,13 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating(ratingByAccountId);
     }
 
-    private Boolean isValidTriggerOperation(fflib_TriggerChangeEventContext ctx)
+    private Boolean isValidTriggerOperation(fflib_TriggerSObjectContext ctx)
     {
         return (ctx.operationType == System.TriggerOperation.BEFORE_INSERT || 
                 ctx.operationType == System.TriggerOperation.BEFORE_UPDATE );
     }
     
-    private Boolean isValidExecution(fflib_TriggerChangeEventContext ctx)
+    private Boolean isValidExecution(fflib_TriggerSObjectContext ctx)
     {
         return largeIrishAccounts.isNotEmpty() && isValidTriggerOperation(ctx);
     }
@@ -420,7 +420,7 @@ trigger Accounts on Account
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
-    public override void onBeforeUpdate(fflib_TriggerChangeEventContext ctx)
+    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
     {
         // Get the records with a changed value for the Account.Name field
         Accounts changedRecords = ctx.getChanged(Schema.Account.Name);
@@ -432,7 +432,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         changedRecords.upperCaseName();
     }
 
-    public override void onBeforeInsert(fflib_TriggerChangeEventContext ctx)
+    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx)
     {
         // Just upper case the name field for all new records    
         ((Accounts) ctx.getDomain())

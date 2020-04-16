@@ -85,9 +85,9 @@ The handle method will contain the actual business logic.
 ```apex
 public with sharing class MyBusinessLogic implements fflib_TriggerHandler
 {
-    public void pre(fflib_TriggerContext ctx) {}
+    public override void pre(fflib_TriggerContext ctx) {}
 
-    public void handle(fflib_TriggerContext ctx)
+    public override void handle(fflib_TriggerContext ctx)
     {
        // Add your logic here
     }
@@ -149,13 +149,31 @@ There are three different handler types to support the triggers;
 #### SObject Trigger Handler
 Extending a trigger handler from the `fflib_TriggerSObjectHandler` abstract class 
 will give the handler a range of feature only available when handling SObjects.
-The trigger context class is also more specific to only handling Standard and custom SObjects. 
+The trigger context class is also more specific to only handling Standard and custom SObjects.
+
+There are two ways to write the trigger handler, 
+a pre and handle method can be used or the traditional methods like onBeforeInsert  
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 {
-    public void pre(fflib_TriggerSObjectContext ctx) {}
+    public override void pre(fflib_TriggerSObjectContext ctx) {}
 
-    public void handle(fflib_TriggerSObjectContext ctx)
+    public override void handle(fflib_TriggerSObjectContext ctx)
+    {
+       // Add your logic here
+    }
+}
+```
+or
+```apex
+public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+{
+    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx) 
+    {
+       // Add your logic here
+    }
+
+    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
     {
        // Add your logic here
     }
@@ -181,9 +199,9 @@ This can only be used when handling ChangeEvents not for any other trigger type.
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandler
 {
-    public void pre(fflib_TriggerChangeEventContext ctx) {}
+    public override void pre(fflib_TriggerChangeEventContext ctx) {}
 
-    public void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerChangeEventContext ctx)
     {
        // Add your logic here
     }
@@ -205,9 +223,9 @@ This can only be used when handling Platform Events not for any other trigger ty
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerPlatformEventHandler
 {
-    public void pre(fflib_TriggerPlatformEventContext ctx) {}
+    public override void pre(fflib_TriggerPlatformEventContext ctx) {}
 
-    public void handle(fflib_TriggerPlatformEventContext ctx)
+    public override void handle(fflib_TriggerPlatformEventContext ctx)
     {
        // Add your logic here
     }
@@ -467,7 +485,7 @@ trigger AccountChangeEvents on AccountChangeEvent (after insert)
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandler
 {
-    public void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerChangeEventContext ctx)
     {
         if (!isValidExecution(ctx)) return;  
 

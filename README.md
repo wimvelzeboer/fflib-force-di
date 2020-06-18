@@ -44,8 +44,8 @@ public with sharing class Application
     public static final fflib_DomainFactory Domain = 
             new fflib_DomainFactoryImp(APP_NAME, Application.Selector);
 
-    public static final fflib_TriggerHandlerFactory TriggerHandler =
-            new fflib_TriggerHandlerFactoryImp(APP_NAME, Domain);
+    public static final fflib_TriggerHandler TriggerHandler =
+            new fflib_TriggerHandlerImp(APP_NAME, Domain);
 
 }
 ```

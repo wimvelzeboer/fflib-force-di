@@ -24,6 +24,7 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 	  * @param recordIds Record ids to register in the domain
 	  * @throws fflib_DeveloperException when the SObjectType could not be retrieved from the List<SObject>,
 	  * @throws fflib_DeveloperException when the implementation is null or its not an instance of fflib_SObjectDomain.IConstructable2
+	  * @return Instance of a SObjectDomain class
 	  */
 	public fflib_ISObjectDomain newInstance(Set<Id> recordIds)
 	{
@@ -52,7 +53,7 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 	 *
 	 * @description Gets the instance for the domain constructor from force-di and constructs a new domain
 	 * @param records Records to register in the domain
-	 * @param sObjectType
+	 * @param sObjectType The SObjectType of the provided records
 	 *
 	 * @return SObjectDomain instance or the mocked version
 	 * @throws fflib_DeveloperException when the implementation is null or its not an instance of fflib_SObjectDomain.IConstructable2
@@ -65,7 +66,7 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 		}
 
 		Object implementation = getImplementationFromInjector(sObjectType);
-		assertForDomainImplementation(implementation, sObjectType);
+		assertForDomainImplementation(implementation);
 		return constructDomainInstance(implementation, records, sObjectType);
 	}
 
@@ -84,36 +85,31 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 				.replaceBindingWith(domainImpl);
 	}
 
-	// @Deprecated - only available for backwards compatibility
-	public void setMock(Object selectorImp)
+	/**
+	 * setMock
+	 *
+	 * @description Replace the implementation with a mock version
+	 * @param sObjectType The SObjectType of the provided domain mock implementation
+	 * @param domainImp The implementation to use for mocking
+	 */
+	public void setMock(Schema.SObjectType sObjectType, Object domainImp)
 	{
-		System.debug(System.LoggingLevel.WARN, 'setMock is deprecated and replaced for replaceWith');
-		replaceWith(
-				((fflib_ISObjectSelector) selectorImp).sObjectType(),
-				selectorImp
-		);
+		if (this.mocks == null)
+		{
+			this.mocks = new Map<Schema.SObjectType, Object>();
+		}
+		this.mocks.put(sObjectType, domainImp);
 	}
-
 
 	/**
 	 * assertForDomainImplementation
 	 *
-	 * @param implementation
-	 * @param sObjectType
+	 * @param implementation Implementation returned by the binding to be validated
 	 *
 	 * @throws fflib_DeveloperException when the implementation is null or its not an instance of fflib_SObjectDomain.IConstructable2
 	 */
-	private void assertForDomainImplementation(Object implementation, SObjectType sObjectType)
+	private void assertForDomainImplementation(Object implementation)
 	{
-		if (implementation == null)
-		{
-			throw new fflib_DeveloperException(
-					String.format(
-							// todo - convert to label
-							'Label.fflib_DomainConstructorNotFoundForSObject',
-							new List<String>{ sObjectType.getDescribe().getName() }
-					));
-		}
 		if (!(implementation instanceof fflib_SObjectDomain.IConstructable2) &&
 				!(implementation instanceof fflib_SObjectDomain.IConstructable))
 		{
@@ -173,7 +169,7 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 	 * getBindingName
 	 *
 	 * @description Constructs the binding name with; AppName, "domain" and SObjectType
-	 * @param sObjectType
+	 * @param sObjectType The SObjectType for which to return the binding name
 	 *
 	 * @return The constructed binding name
 	 *
@@ -228,23 +224,5 @@ public virtual with sharing class fflib_DomainFactoryImp implements fflib_Domain
 	private fflib_ISObjectDomain newMockInstance(Schema.SObjectType sObjectType)
 	{
 		return (fflib_ISObjectDomain) this.mocks.get(sObjectType);
-	}
-
-	/**
-	 * setMock
-	 *
-	 * @description Allows to register a mock implementation for the given SObjectType
-	 * @param sObjectType
-	 * @param mockImp
-	 */
-	@TestVisible
-	private void setMock(SObjectType sObjectType, Object mockImp)
-	{
-		if (this.mocks == null)
-		{
-			this.mocks = new Map<Schema.SObjectType, Object>();
-		}
-
-		this.mocks.put(sObjectType, mockImp);
 	}
 }

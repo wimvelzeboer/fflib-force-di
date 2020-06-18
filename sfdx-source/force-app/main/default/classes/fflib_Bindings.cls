@@ -7,6 +7,7 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 {
 
 	private static final String SELECTOR = 'Selector';
+	private static final String SERVICE = 'Service';
 	private static final String DOMAIN = 'Domain';
 	private static final String APEX = 'Apex';
 
@@ -14,9 +15,9 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 
 	private static final Map<String, Type> BINDING_TYPE_IMP_BY_NAME = new Map<String, Type>
 	{
-			'Domain' => fflib_Bindings.DomainBinding.class,
-			'Service' => fflib_Bindings.ServiceBinding.class,
-			'Selector' => fflib_Bindings.SelectorBinding.class,
+			DOMAIN => fflib_Bindings.DomainBinding.class,
+			SERVICE => fflib_Bindings.ServiceBinding.class,
+			SELECTOR => fflib_Bindings.SelectorBinding.class,
 			'Other' => fflib_Bindings.ApexBinding.class
 	};
 
@@ -39,7 +40,16 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 			String bindingType = String.valueOf(record.get(fflib_Binding__mdt.Type__c));
 			if (!BINDING_TYPE_IMP_BY_NAME.containsKey(bindingType))
 			{
-				// todo throw exception
+				throw new BindingsException(
+						String.format(
+								'Binding type {0} not recognized available options:{1}',
+								new List<String>
+								{
+										bindingType,
+										BINDING_TYPE_IMP_BY_NAME.keySet().toString()
+								}
+						)
+				);
 			}
 
 			fflib_Bindings.Binding binding =
@@ -49,7 +59,6 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 		}
 		return result;
 	}
-
 
 	/**
 	 * Interface to set default methods for the Bindings
@@ -62,7 +71,6 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 		Integer getSequence();
 		String getTo();
 	}
-
 
 	/**
 	 * Generic Apex Binding class
@@ -112,7 +120,7 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 		 * setRecord
 		 *
 		 * @description Replace the SObject with a one
-		 * @param record
+		 * @param record Record of SObjectType fflib_Binding__mdt
 		 */
 		public void setRecord(fflib_Binding__mdt record)
 		{
@@ -123,15 +131,14 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 		 * getName
 		 *
 		 * @description The binding name will be generated based on the namespace, it's type and SObjectType
-		 * @param type
+		 * @param type The name of the binding type
 		 *
 		 * @return Binding names used by force-di as key for the binding
 		 */
 		protected String getName(String type)
 		{
-			String str = (getAppOrNameSpaceName() + BINDING_DIVIDER + type + BINDING_DIVIDER + getSObjectName())
+			return (getAppOrNameSpaceName() + BINDING_DIVIDER + type + BINDING_DIVIDER + getSObjectName())
 					.toLowerCase();
-			return str;
 		}
 
 		/**
@@ -190,4 +197,6 @@ public with sharing class fflib_Bindings extends fflib_SObjectDomain
 			return record.DeveloperName;
 		}
 	}
+
+	public class BindingsException extends Exception{}
 }

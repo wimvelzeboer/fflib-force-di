@@ -25,8 +25,7 @@ public with sharing class fflib_ServiceFactoryImp implements fflib_ServiceFactor
 
 	// @Deprecated - only available for backwards compatibility
 	public void setMock(Type serviceInterfaceType, Object serviceImp)
-	{s
-		System.debug(System.LoggingLevel.WARN, 'setMock is deprecated and replaced for replaceWith');
+	{
 		replaceWith(serviceInterfaceType, serviceImp);
 	}
 }

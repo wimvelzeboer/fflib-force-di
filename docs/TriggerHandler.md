@@ -69,8 +69,8 @@ public class Application
             new fflib_DomainFactoryImp(APP_NAME, Selector);
 
     // The TriggerHandler factory
-    public final fflib_TriggerHandlerFactory TriggerHandler =
-            new fflib_TriggerHandlerFactoryImp(APP_NAME, Domain);
+    public final fflib_TriggerHandler TriggerHandler =
+            new fflib_TriggerHandlerImp(APP_NAME, Domain);
 }
 ```
 
@@ -83,11 +83,11 @@ It contains two methods; pre and handle. The pre method is to initialize the han
 It can utilize the Trigger Context (ctx) to perform initialisation steps on a higher level.
 The handle method will contain the actual business logic.
 ```apex
-public with sharing class MyBusinessLogic implements fflib_TriggerHandler
+public with sharing class MyBusinessLogic implements fflib_TriggerAction
 {
     public override void pre(fflib_TriggerContext ctx) {}
 
-    public override void handle(fflib_TriggerContext ctx)
+    public override void run(fflib_TriggerContext ctx)
     {
        // Add your logic here
     }
@@ -135,7 +135,7 @@ trigger Accounts on Account
     // Invoke the handler
     Application.TriggerHandler.handle(
             Accounts.SObjectType,
-            fflib_TriggerSObjectContext.class
+            fflib_TriggerContextSObject.class
     );
 }
 ```
@@ -154,11 +154,11 @@ The trigger context class is also more specific to only handling Standard and cu
 There are two ways to write the trigger handler, 
 a pre and handle method can be used or the traditional methods like onBeforeInsert  
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
-    public override void pre(fflib_TriggerSObjectContext ctx) {}
+    public override void pre(fflib_TriggerContextSObject ctx) {}
 
-    public override void handle(fflib_TriggerSObjectContext ctx)
+    public override void run(fflib_TriggerContextSObject ctx)
     {
        // Add your logic here
     }
@@ -166,14 +166,14 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
 ```
 or
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
-    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx) 
+    public override void onBeforeInsert(fflib_TriggerContextSObject ctx) 
     {
        // Add your logic here
     }
 
-    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
+    public override void onBeforeUpdate(fflib_TriggerContextSObject ctx)
     {
        // Add your logic here
     }
@@ -187,7 +187,7 @@ trigger Accounts on Account
     // Invoke the handler
     Application.TriggerHandler.handle(
             Accounts.SObjectType,
-            fflib_TriggerSObjectContext.class
+            fflib_TriggerContextSObject.class
     );
 }
 ```
@@ -197,11 +197,11 @@ Extending a trigger handler from the `fflib_TriggerChangeEventHandler` abstract 
 will give the handler a range of feature only available when handling Change Events. 
 This can only be used when handling ChangeEvents not for any other trigger type.
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionEventHandler
 {
-    public override void pre(fflib_TriggerChangeEventContext ctx) {}
+    public override void pre(fflib_TriggerContextChangeEvent ctx) {}
 
-    public override void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerContextChangeEvent ctx)
     {
        // Add your logic here
     }
@@ -213,7 +213,7 @@ trigger AccountChangeEvents on AccountChangeEvent (after insert)
     // Invoke the handler
     Application.TriggerHandler.handle(
             AccountChangeEvent.SObjectType, 
-            fflib_TriggerChangeEventContext.class);
+            fflib_TriggerContextChangeEvent.class);
 }
 ```
 #### PlatformEvent Trigger Handler
@@ -221,11 +221,11 @@ Extending a trigger handler from the `fflib_TriggerPlatformEventHandler` abstrac
 will give the handler a range of feature only available when handling Platform Events. 
 This can only be used when handling Platform Events not for any other trigger type.
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerPlatformEventHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionPlatformEvent
 {
-    public override void pre(fflib_TriggerPlatformEventContext ctx) {}
+    public override void pre(fflib_TriggerContextPlatformEvent ctx) {}
 
-    public override void handle(fflib_TriggerPlatformEventContext ctx)
+    public override void handle(fflib_TriggerContextPlatformEvent ctx)
     {
        // Add your logic here
     }
@@ -237,7 +237,7 @@ trigger AccountPlatformEvents on Account__e (after insert)
     // Invoke the handler
     Application.TriggerHandler.handle(
             AccountChangeEvent.SObjectType, 
-            fflib_TriggerPlatformEventContext.class);
+            fflib_TriggerContextPlatformEvent.class);
 }
 ```
 
@@ -254,11 +254,11 @@ Features provided via the `fflib_TriggerSObjectContext` are:
 
  
 #### Change Event trigger context
-Features provided via the `fflib_TriggerChangeEventContext` are:
+Features provided via the `fflib_TriggerContextChangeEvent` are:
 - easy access to records with certain fields changed
 
 #### Platform Event trigger context
-Features provided via the `fflib_TriggerPlatformEventContext` are:
+Features provided via the `fflib_TriggerContextPlatformEvent` are:
 - access to a domain class containing the records of the trigger operation
 
 ----
@@ -270,11 +270,11 @@ The following example invokes logic only when a certain condition is met.
 In this case the logic is to always set the rating to 'Warm' for new accounts 
 originating from 'Ireland' with more than 25 employees.
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
     private Accounts largeIrishAccounts;
 
-    public override void pre(fflib_TriggerSObjectContext ctx) 
+    public override void pre(fflib_TriggerContextSObject ctx) 
     {
         if (!isValidTriggerOperation(ctx)) return;
  
@@ -284,7 +284,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
                     .selectByNumberOfEmployeesGreaterThan(25);
     }
 
-    public override void handle(fflib_TriggerSObjectContext ctx)
+    public override void handle(fflib_TriggerContextSObject ctx)
     {
         // Guard clause with validation
         if (!isValidExecution(ctx)) return ;  
@@ -292,13 +292,13 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating('Warm');
     }
 
-    private Boolean isValidTriggerOperation(fflib_TriggerSObjectContext ctx)
+    private Boolean isValidTriggerOperation(fflib_TriggerContextSObject ctx)
     {
         return (ctx.operationType == System.TriggerOperation.BEFORE_INSERT || 
                 ctx.operationType == System.TriggerOperation.BEFORE_UPDATE );
     }
     
-    private Boolean isValidExecution(fflib_TriggerSObjectContext ctx)
+    private Boolean isValidExecution(fflib_TriggerContextSObject ctx)
     {
         return largeIrishAccounts.isNotEmpty() && isValidTriggerOperation(ctx);
     }
@@ -320,11 +320,11 @@ But when the account is updated, it must at least have a rating of 'Warm' or 'Ho
 
 
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
     private Accounts largeIrishAccounts;
 
-    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx) 
+    public override void onBeforeInsert(fflib_TriggerContextSObject ctx) 
     {
         Accounts largeIrishAccounts = 
             ctx.getDomain()
@@ -336,7 +336,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating('Hot');
     }
     
-    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
+    public override void onBeforeUpdate(fflib_TriggerContextSObject ctx)
     {
         Accounts changedRating = ctx.getChangedRecords(Schema.Accounts.Rating);
         if (changedRating.isEmpty()) return;
@@ -359,11 +359,11 @@ In this case the logic is to always set the rating to 'Warm' for accounts with c
 originating from 'Ireland' with more than 25 employees.
 When the they are without contacts, the rating will always default back to 'Cold'.
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
     private Accounts largeIrishAccounts;
 
-    public override void pre(fflib_TriggerSObjectContext ctx) 
+    public override void pre(fflib_TriggerContextSObject ctx) 
     {
         if (!isValidTriggerOperation(ctx)) return; 
 
@@ -380,7 +380,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         ctx.addRelatedRecords(Schema.Account.Contacts);
     }
 
-    public override void handle(fflib_TriggerSObjectContext ctx)
+    public override void handle(fflib_TriggerContextSObject ctx)
     {
         if (!isValidExecution(ctx)) return;  
         
@@ -405,13 +405,13 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         largeIrishAccounts.setRating(ratingByAccountId);
     }
 
-    private Boolean isValidTriggerOperation(fflib_TriggerSObjectContext ctx)
+    private Boolean isValidTriggerOperation(fflib_TriggerContextSObject ctx)
     {
         return (ctx.operationType == System.TriggerOperation.BEFORE_INSERT || 
                 ctx.operationType == System.TriggerOperation.BEFORE_UPDATE );
     }
     
-    private Boolean isValidExecution(fflib_TriggerSObjectContext ctx)
+    private Boolean isValidExecution(fflib_TriggerContextSObject ctx)
     {
         return largeIrishAccounts.isNotEmpty() && isValidTriggerOperation(ctx);
     }
@@ -436,9 +436,9 @@ trigger Accounts on Account
 }
 ```
 ```apex
-public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
+public with sharing class MyBusinessLogic extends fflib_TriggerActionSObject
 {
-    public override void onBeforeUpdate(fflib_TriggerSObjectContext ctx)
+    public override void onBeforeUpdate(fflib_TriggerContextSObject ctx)
     {
         // Get the records with a changed value for the Account.Name field
         Accounts changedRecords = ctx.getChanged(Schema.Account.Name);
@@ -450,7 +450,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerSObjectHandler
         changedRecords.upperCaseName();
     }
 
-    public override void onBeforeInsert(fflib_TriggerSObjectContext ctx)
+    public override void onBeforeInsert(fflib_TriggerContextSObject ctx)
     {
         // Just upper case the name field for all new records    
         ((Accounts) ctx.getDomain())
@@ -485,7 +485,7 @@ trigger AccountChangeEvents on AccountChangeEvent (after insert)
 ```apex
 public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandler
 {
-    public override void handle(fflib_TriggerChangeEventContext ctx)
+    public override void handle(fflib_TriggerContextChangeEvent ctx)
     {
         if (!isValidExecution(ctx)) return;  
 
@@ -495,7 +495,7 @@ public with sharing class MyBusinessLogic extends fflib_TriggerChangeEventHandle
         );       
     }
 
-    private Boolean isValidExecution(fflib_TriggerChangeEventContext ctx)
+    private Boolean isValidExecution(fflib_TriggerContextChangeEvent ctx)
     {
         return ctx.operationType == 'UPDATE' && ctx.hasChangedField(Schema.Account.ShippingCountry);
     }

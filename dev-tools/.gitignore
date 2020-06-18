@@ -1,0 +1,14 @@
+################################################################################
+# Ignore local-config.sh
+# This file is used to set variables in each of the shell scripts found in the dev-tools folder.
+# Because these variables may be customized to suit individual developers, it should not be
+# tracked in source control.
+#
+# TODO: Need to fill out the rest of this documentation header.
+################################################################################
+
+#Ignore local-config.sh
+local-config.sh
+
+# Ignore any files or folders that start with "custom_" (case insensitive)
+custom_*
